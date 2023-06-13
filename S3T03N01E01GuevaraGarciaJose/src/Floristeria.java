@@ -1,39 +1,48 @@
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.*;
+
 
 public class Floristeria {
 
     static Scanner captura = new Scanner(System.in);
-    public static void main(String[] args) {
+
+
+    public static void main(String[] args) throws  SQLException {
+
 
         boolean sortir = false;
         int posicion = 0;
+
+
 
         ArrayList<Establecimiento> establecimientos = new ArrayList<>();
         ArrayList<Producto> productos = new ArrayList<>();
         ArrayList<Venta> ventas = new ArrayList<>();
 
-        Establecimiento floristeria1 = new Establecimiento("Floristeria Rosa", 3000, 10);
-        establecimientos.add(floristeria1);
+        //Establecimiento floristeria1 = new Establecimiento("Floristeria Rosa", 3000, 10);
+        //establecimientos.add(floristeria1);
 
-        Establecimiento floristeria2 = new Establecimiento("Floristeria Petalo Feliz", 4000, 20);
-        establecimientos.add(floristeria2);
+        //Establecimiento floristeria2 = new Establecimiento("Floristeria Petalo Feliz", 4000, 20);
+        //establecimientos.add(floristeria2);
 
-        Establecimiento floristeria3 = new Establecimiento("Floristeria El detalle", 2000, 20);
-        establecimientos.add(floristeria3);
+        //Establecimiento floristeria3 = new Establecimiento("Floristeria El detalle", 2000, 20);
+        //establecimientos.add(floristeria3);
 
 
-        Producto arbol = new Producto("Arbol", "Verde", "Natural", 1, 10,1);
-        productos.add(arbol);
+        //Producto arbol = new Producto("Arbol", "Verde", "Natural", 1, 10,1);
+        //productos.add(arbol);
 
-        Producto flor = new Producto("Flor", "Rosa Roja", "Natural", 1, 5,10);
-        productos.add(flor);
+        //Producto flor = new Producto("Flor", "Rosa Roja", "Natural", 1, 5,10);
+        //productos.add(flor);
 
-        Producto decoracion = new Producto("Decoracion", "Cesped Verde", "Plastico", 2, 8,15);
-        productos.add(decoracion);
+        //Producto decoracion = new Producto("Decoracion", "Cesped Verde", "Plastico", 2, 8,15);
+        //productos.add(decoracion);
 
-        Venta venta1 = new Venta(1,"Flor", "Rojo","Natural",2,5,10);
-        ventas.add(venta1);
+        //Venta venta1 = new Venta(1,"Flor", "Rojo","Natural",2,5,10);
+        //ventas.add(venta1);
 
         do{
             switch(menu()){
@@ -119,10 +128,10 @@ public class Floristeria {
         return opcio;
     }
 
-    public static void crearFloristeria(ArrayList<Establecimiento> establecimientos, int posicion)  {
+    public static void crearFloristeria(ArrayList<Establecimiento> establecimientos, int posicion) throws SQLException {
         String nombreFlor = " ";
 
-        int valorStock, totalProductos;
+        int valorStock, totalProductos, totalR;
 
         System.out.println("Posicion:" + posicion );
 
@@ -139,6 +148,9 @@ public class Floristeria {
 
             Establecimiento florx = new Establecimiento(nombreFlor, valorStock, totalProductos);
             establecimientos.add(florx);
+            totalR= establecimientos.size();
+            System.out.println(totalR);
+            altaEstablecimiento(establecimientos,totalR);
 
             System.out.println("Floristeria : " + establecimientos.get(0).getNombreEstablecimiento() );
 
@@ -165,10 +177,11 @@ public class Floristeria {
 
     }
 
-    public static void crearProducto(ArrayList<Producto> productos, int posicion)  {
+    public static void crearProducto(ArrayList<Producto> productos, int posicion) throws SQLException {
         String nombreProducto = " ", color = " ", material = " ";
 
-        int tamaño, precio, stock;
+
+        int tamaño, precio, stock,reg;
 
         System.out.println("Posicion:" + posicion );
 
@@ -195,6 +208,9 @@ public class Floristeria {
 
             Producto productox = new Producto(nombreProducto, color, material, tamaño,precio ,stock);
             productos.add(productox);
+            reg= productos.size();
+
+            altaProducto(productos,reg);
 
             System.out.println("Producto : " + productos.get(0).getTipoProducto() );
 
@@ -388,5 +404,86 @@ public class Floristeria {
         System.out.println("-".repeat(85));
         System.out.printf("|%83s|\n", "Total: " + String.valueOf(total));
         System.out.println("                            **Gracias por su compra**");
+    }
+
+
+    public static void altaProducto(ArrayList<Producto> productos, int posicion) throws SQLException {
+        int regx;
+        regx = posicion - 1;
+        Connection con;
+        PreparedStatement pst = null;
+
+        try {
+            //String driverName = "com.mysql.jdbc.Driver";
+            String driverName = "com.mysql.cj.jdbc.Driver";
+            Class.forName(driverName); // here is the ClassNotFoundException
+            String serverName = "localhost";
+            String mydatabase = "floristeria";
+            String url = "jdbc:mysql://" + serverName + "/" + mydatabase;
+
+            String username = "root";
+            String password = "Prueba01*";
+            con = DriverManager.getConnection(url, username, password);
+            System.out.println("conectado");
+
+            pst = con.prepareStatement("INSERT INTO producto VALUES (?,?,?,?,?,?,?)");
+
+
+        } catch (ClassNotFoundException ex){
+            ex.printStackTrace();
+        } catch (
+                SQLException ex){
+            ex.printStackTrace();
+        }
+
+        pst.setInt(1,regx);
+        pst.setString(2,productos.get(regx).getTipoProducto());
+        pst.setString(3,productos.get(regx).getColorPlanta());
+        pst.setString(4,productos.get(regx).getMaterial());
+        pst.setInt(5,productos.get(regx).getTamañoPlanta());
+        pst.setInt(6,productos.get(regx).getPrecio());
+        pst.setInt(7,productos.get(regx).getStock());
+
+
+        pst.executeUpdate();
+
+    }
+    public static void altaEstablecimiento(ArrayList<Establecimiento> establecimientos, int posicion) throws SQLException {
+        int regp;
+        regp = posicion - 1;
+        Connection con;
+        PreparedStatement pst = null;
+
+        try {
+            //String driverName = "com.mysql.jdbc.Driver";
+            String driverName = "com.mysql.cj.jdbc.Driver";
+            Class.forName(driverName); // here is the ClassNotFoundException
+            String serverName = "localhost";
+            String mydatabase = "floristeria";
+            String url = "jdbc:mysql://" + serverName + "/" + mydatabase;
+
+            String username = "root";
+            String password = "Prueba01*";
+            con = DriverManager.getConnection(url, username, password);
+            System.out.println("conectado");
+
+            pst = con.prepareStatement("INSERT INTO establecimiento VALUES (?,?,?,?)");
+
+
+        } catch (ClassNotFoundException ex){
+            ex.printStackTrace();
+        } catch (
+                SQLException ex){
+            ex.printStackTrace();
+        }
+        System.out.println(regp);
+        pst.setInt(1,regp);
+        pst.setString(2,establecimientos.get(regp).getNombreEstablecimiento());
+        pst.setInt(3,establecimientos.get(regp).getValorStock());
+        pst.setInt(4,establecimientos.get(regp).getTotalProductos());
+
+
+        pst.executeUpdate();
+
     }
 }
